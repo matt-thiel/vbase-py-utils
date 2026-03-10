@@ -6,6 +6,7 @@ from typing import Dict, Optional
 import pandas as pd
 
 from vbase_utils.sim import sim
+from vbase_utils.stats.parallel_robust_betas import parallel_robust_betas
 from vbase_utils.stats.robust_betas import robust_betas
 
 # Configure logging
@@ -22,6 +23,8 @@ def pit_robust_betas(
     half_life: Optional[float] = None,
     lambda_: Optional[float] = None,
     min_timestamps: int = 10,
+    parallel: bool = False,
+    fill_missing_betas: bool = False,
     rebalance_time_index: Optional[pd.DatetimeIndex] = None,
     progress: bool = False,
 ) -> Dict[str, pd.DataFrame]:
@@ -88,13 +91,26 @@ def pit_robust_betas(
         df_fact_rets = data["df_fact_rets"]
 
         # Run robust regression
-        beta_matrix = robust_betas(
-            df_asset_rets,
-            df_fact_rets,
-            half_life=half_life,
-            lambda_=lambda_,
-            min_timestamps=min_timestamps,
-        )
+        if parallel:
+            beta_matrix = parallel_robust_betas(
+                df_asset_rets,
+                df_fact_rets,
+                half_life=half_life,
+                lambda_=lambda_,
+                min_timestamps=min_timestamps,
+            )
+        else:
+            beta_matrix = robust_betas(
+                df_asset_rets,
+                df_fact_rets,
+                half_life=half_life,
+                lambda_=lambda_,
+                min_timestamps=min_timestamps,
+            )
+        # Fill NA betas with 1.0. Only fills rows where at least one beta is not NA
+        if fill_missing_betas:
+            row_has_any = beta_matrix.notna().any(axis=1)
+            beta_matrix.loc[row_has_any] = beta_matrix.loc[row_has_any].fillna(1.0)
 
         dict_ret = {
             "betas": beta_matrix,
