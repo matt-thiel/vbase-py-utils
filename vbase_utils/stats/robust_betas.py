@@ -188,6 +188,8 @@ def robust_betas(
 
         # X is filtered according to the mask used to filter y.
         x_w_const: pd.DataFrame = sm.add_constant(x_weighted.loc[valid_mask])
+        # Statsmodels does not apply weights to constant, apply manually.
+        x_w_const["const"] = x_w_const["const"] * sqrt_weights
         rlm_model = sm.RLM(y_filtered, x_w_const, M=sm.robust.norms.HuberT())
         rlm_results = rlm_model.fit()
 
