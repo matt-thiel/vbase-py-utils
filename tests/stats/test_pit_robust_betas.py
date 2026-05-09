@@ -262,7 +262,7 @@ class TestPitRobustBetas(unittest.TestCase):
             fill_missing_betas=True,
         )
         betas_with_fill = results_with_fill["df_betas"].xs(mid_date)
-        self.assertAlmostEqual(betas_with_fill.loc["SPY", "Asset2"], 1.0, places=10)
+        self.assertEqual(betas_with_fill.loc["SPY", "Asset2"], 1.0)
         # Asset1 betas should still be real (not 1.0)
         self.assertAlmostEqual(betas_with_fill.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA)
 

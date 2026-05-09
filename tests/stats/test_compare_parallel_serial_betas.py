@@ -88,8 +88,8 @@ class TestParallelVsSerialRegression(unittest.TestCase):
             "df_hedge_rets",
             "df_asset_resids",
         }
-        self.assertEqual(set(self.parallel.keys()) & expected_keys, expected_keys)
-        self.assertEqual(set(self.serial.keys()) & expected_keys, expected_keys)
+        self.assertEqual(set(self.parallel.keys()), expected_keys)
+        self.assertEqual(set(self.serial.keys()), expected_keys)
 
     def test_betas_close(self):
         """df_betas['ASSET'] values agree within atol=1e-6."""
