@@ -87,7 +87,7 @@ def parallel_robust_betas(
         n_jobs: Number of parallel jobs to run. -1 uses all available cores. Defaults to -1.
 
     Returns:
-        DataFrame of shape (n_factors + 1, n_assets) containing the computed betas.
+        DataFrame of shape (n_factors, n_assets) containing the computed betas.
 
     Raises:
         ValueError: If inputs are empty, have insufficient data, mismatched rows,
