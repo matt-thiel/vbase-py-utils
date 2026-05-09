@@ -110,7 +110,7 @@ def robust_betas(
         min_timestamps: Minimum number of timestamps required for regression. Defaults to 10.
 
     Returns:
-        DataFrame of shape (n_factors + 1, n_assets) containing the computed betas.
+        DataFrame of shape (n_factors, n_assets) containing the computed betas.
 
     Raises:
         ValueError: If inputs are empty, have insufficient data, mismatched rows,
@@ -189,7 +189,7 @@ def robust_betas(
         # X is filtered according to the mask used to filter y.
         x_w_const: pd.DataFrame = sm.add_constant(x_weighted.loc[valid_mask])
         # Statsmodels does not apply weights to constant, apply manually.
-        x_w_const["const"] = x_w_const["const"] * sqrt_weights
+        x_w_const["const"] = x_w_const["const"] * sqrt_weights[valid_mask]
         rlm_model = sm.RLM(y_filtered, x_w_const, M=sm.robust.norms.HuberT())
         rlm_results = rlm_model.fit()
 

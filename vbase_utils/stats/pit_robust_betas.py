@@ -42,6 +42,10 @@ def pit_robust_betas(
         half_life: Half-life in time units (e.g., days). Must be positive.
         lambda_: Decay factor (e.g., 0.985). Must be between 0 and 1.
         min_timestamps: Minimum number of timestamps required for regression. Defaults to 10.
+        parallel: If True, use parallel_robust_betas() for asset-level parallelism via joblib.
+            Defaults to False.
+        fill_missing_betas: If True, replaces NaN betas with 1.0 for factor rows where at
+            least one asset has a valid beta. Defaults to False.
         rebalance_time_index: Optional DatetimeIndex specifying when to rebalance hedge ratios.
             If not provided, uses all timestamps from df_asset_rets.
         progress: Whether to show a progress bar during simulation. Defaults to False.

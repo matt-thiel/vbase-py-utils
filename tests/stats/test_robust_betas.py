@@ -166,6 +166,17 @@ class TestRobustBetas(unittest.TestCase):
         # Check that the betas are all NaN.
         self.assertTrue(beta_matrix.isna().all().all())
 
+    def test_with_nan_asset_returns(self):
+        """NaN in asset returns must not cause shape mismatch when weighting const column."""
+        asset_returns = np.concatenate([
+            np.full(20, np.nan),
+            1.5 * self.spy_returns[20:] + np.random.normal(0, STD_ASSET_RETS, 80),
+        ])
+        df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
+        df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
+        beta_matrix = robust_betas(df_asset_rets, df_fact_rets, half_life=30)
+        self.assertAlmostEqual(beta_matrix.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -31,9 +31,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         )
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
-        beta_matrix = parallel_robust_betas(
-            df_asset_rets, df_fact_rets, half_life=30
-        )
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
         self.assertAlmostEqual(
             beta_matrix.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA
         )
@@ -50,9 +48,7 @@ class TestParallelRobustBetas(unittest.TestCase):
             {"Asset1": asset_returns_1, "Asset2": asset_returns_2}
         )
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
-        beta_matrix = parallel_robust_betas(
-            df_asset_rets, df_fact_rets, half_life=30
-        )
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
         self.assertAlmostEqual(
             beta_matrix.loc["SPY", "Asset1"], 1.2, delta=DEFAULT_DELTA
         )
@@ -70,9 +66,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         )
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns, "IWM": iwm_returns})
-        beta_matrix = parallel_robust_betas(
-            df_asset_rets, df_fact_rets, half_life=30
-        )
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
         self.assertAlmostEqual(
             beta_matrix.loc["SPY", "Asset1"], 1.2, delta=DEFAULT_DELTA
         )
@@ -87,9 +81,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         )
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
-        beta_matrix = parallel_robust_betas(
-            df_asset_rets, df_fact_rets, lambda_=0.985
-        )
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, lambda_=0.985)
         self.assertAlmostEqual(
             beta_matrix.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA
         )
@@ -99,9 +91,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         df_asset_rets = pd.DataFrame()
         df_fact_rets = pd.DataFrame()
         with self.assertRaises(ValueError):
-            parallel_robust_betas(
-                df_asset_rets, df_fact_rets, half_life=30
-            )
+            parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
 
     def test_mismatched_timestamps(self):
         """Test handling of df_asset_rets and df_fact_rets with different row counts."""
@@ -111,9 +101,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
         with self.assertRaises(ValueError):
-            parallel_robust_betas(
-                df_asset_rets, df_fact_rets, half_life=30
-            )
+            parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
 
     def test_mismatched_index(self):
         """Test handling of df_asset_rets and df_fact_rets with different index."""
@@ -129,9 +117,7 @@ class TestParallelRobustBetas(unittest.TestCase):
             index=pd.date_range("2023-02-01", periods=self.n_timestamps),
         )
         with self.assertRaises(ValueError):
-            parallel_robust_betas(
-                df_asset_rets, df_fact_rets, half_life=30
-            )
+            parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
 
     def test_invalid_half_life(self):
         """Test handling of negative or zero half_life."""
@@ -168,9 +154,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": spy_constant})
         with self.assertRaises(ValueError):
-            parallel_robust_betas(
-                df_asset_rets, df_fact_rets, half_life=30
-            )
+            parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
 
     def test_outlier_heavy_data(self):
         """Test robustness with significant outliers."""
@@ -180,9 +164,7 @@ class TestParallelRobustBetas(unittest.TestCase):
         asset_returns[::10] += 0.1
         df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
-        beta_matrix = parallel_robust_betas(
-            df_asset_rets, df_fact_rets, half_life=30
-        )
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
         self.assertAlmostEqual(
             beta_matrix.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA * 2
         )
@@ -217,11 +199,20 @@ class TestParallelRobustBetas(unittest.TestCase):
         df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
         serial = robust_betas(df_asset_rets, df_fact_rets, half_life=30)
         parallel = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
-        np.testing.assert_allclose(
-            serial.values, parallel.values, rtol=1e-9, atol=1e-9
-        )
+        np.testing.assert_allclose(serial.values, parallel.values, rtol=1e-9, atol=1e-9)
         pd.testing.assert_index_equal(serial.index, parallel.index)
         pd.testing.assert_index_equal(serial.columns, parallel.columns)
+
+    def test_with_nan_asset_returns(self):
+        """NaN in asset returns must not raise and must return correct betas."""
+        asset_returns = np.concatenate([
+            np.full(20, np.nan),
+            1.5 * self.spy_returns[20:] + np.random.normal(0, STD_ASSET_RETS, 80),
+        ])
+        df_asset_rets = pd.DataFrame({"Asset1": asset_returns})
+        df_fact_rets = pd.DataFrame({"SPY": self.spy_returns})
+        beta_matrix = parallel_robust_betas(df_asset_rets, df_fact_rets, half_life=30)
+        self.assertAlmostEqual(beta_matrix.loc["SPY", "Asset1"], 1.5, delta=DEFAULT_DELTA)
 
 
 if __name__ == "__main__":
